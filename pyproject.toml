@@ -1,0 +1,40 @@
+[project]
+name = "executv"
+version = "0.1.0"
+description = "AI Executive Workstation for Fire TV and Alexa+ MCP"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "core-data-layer",
+  "core-engine",
+  "ingress-gateway",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = [
+  "packages/core_data_layer",
+  "apps/core_engine",
+  "apps/ingress_gateway",
+]
+
+[tool.uv.sources]
+core-data-layer = { workspace = true }
+core-engine = { workspace = true }
+ingress-gateway = { workspace = true }
+
+[dependency-groups]
+dev = [
+  "ruff>=0.8.0",
+  "pytest>=8.3.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "packages/core_data_layer/src",
+  "apps/core_engine/src",
+  "apps/ingress_gateway/src",
+]
+testpaths = ["tests"]

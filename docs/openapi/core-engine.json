@@ -1,0 +1,832 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ExecuTV Core Business Engine",
+    "description": "Orchestration API and Dual-Payload Formatter for Alexa+ and Fire TV. Live docs: `/docs` (Swagger UI) and `/redoc`. Machine-readable spec: `/openapi.json`. Checked-in copy: `docs/openapi/core-engine.json`.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8001",
+      "description": "Local Core Business Engine"
+    },
+    {
+      "url": "http://127.0.0.1:8001",
+      "description": "Loopback Core Business Engine"
+    }
+  ],
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health check",
+        "operationId": "health_check_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health check",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orchestrate": {
+      "post": {
+        "tags": [
+          "orchestration"
+        ],
+        "summary": "Run a domain tool",
+        "description": "Run one executive domain tool and return synchronized **voice_summary** + **visual_state_model** payloads.\n\n| tool_name | parameters |\n| --- | --- |\n| `get_executive_brief` | _(none)_ |\n| `explain_metric_change` | `metric`, `dimension`, `period` |\n| `get_pending_decisions` | `risk_level?` |\n| `execute_decision` | `decision_id` or `decision_title`, `choice` (`approve`/`reject`) |\n| `start_workflow` | `workflow_name` (e.g. `12345`) |\n| `get_recent_events` | `limit?` |",
+        "operationId": "orchestrate_domain_action_api_v1_orchestrate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrchestrationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrchestrationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown tool or missing domain record."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/briefings/current": {
+      "get": {
+        "tags": [
+          "briefings"
+        ],
+        "summary": "Current executive briefing",
+        "operationId": "get_current_briefing_api_v1_briefings_current_get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Organization to brief.",
+              "default": "org_acme_corp",
+              "title": "Org Id"
+            },
+            "description": "Organization to brief."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DualPayload"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/briefings/current": {
+      "get": {
+        "tags": [
+          "briefings"
+        ],
+        "summary": "Current executive briefing",
+        "operationId": "get_current_briefing_v1_briefings_current_get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Organization to brief.",
+              "default": "org_acme_corp",
+              "title": "Org Id"
+            },
+            "description": "Organization to brief."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DualPayload"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/events/ingest": {
+      "post": {
+        "tags": [
+          "events"
+        ],
+        "summary": "Ingest a Ring / site operational event",
+        "operationId": "ingest_event_api_v1_events_ingest_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventIngestRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventIngestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reason": {
+      "post": {
+        "tags": [
+          "reasoning"
+        ],
+        "summary": "Map an utterance to a tool (Gemini or seeded fallback)",
+        "operationId": "reason_utterance_api_v1_reason_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReasonApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Resolved tool failed against domain data."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DualPayload": {
+        "properties": {
+          "voice_summary": {
+            "$ref": "#/components/schemas/VoiceSummary"
+          },
+          "visual_state_model": {
+            "$ref": "#/components/schemas/VisualStateModel"
+          }
+        },
+        "type": "object",
+        "required": [
+          "voice_summary",
+          "visual_state_model"
+        ],
+        "title": "DualPayload",
+        "description": "Synchronized Alexa voice + Fire TV visual document."
+      },
+      "EventIngestRequest": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "org_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Org Id",
+            "examples": [
+              "org_acme_corp"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "default": "ring_site_gateway",
+            "examples": [
+              "ring"
+            ]
+          },
+          "event_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Type",
+            "examples": [
+              "delivery_detected"
+            ]
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority",
+            "examples": [
+              "HIGH"
+            ]
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "severity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Severity",
+            "examples": [
+              "high"
+            ]
+          },
+          "site": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Site",
+            "examples": [
+              "Warehouse 4 — Gate 4"
+            ]
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "title": "EventIngestRequest",
+        "description": "Ring / site operational event. Accepts either the domain schema or the mock-script fields."
+      },
+      "EventIngestResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "INGESTED",
+            "title": "Status",
+            "default": "INGESTED"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id"
+        ],
+        "title": "EventIngestResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "examples": [
+              "ok"
+            ]
+          },
+          "service": {
+            "type": "string",
+            "title": "Service",
+            "examples": [
+              "core_engine"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "service"
+        ],
+        "title": "HealthResponse"
+      },
+      "OrchestrationRequest": {
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "title": "Transaction Id",
+            "examples": [
+              "tx_test_01"
+            ]
+          },
+          "tool_name": {
+            "type": "string",
+            "enum": [
+              "get_executive_brief",
+              "explain_metric_change",
+              "get_pending_decisions",
+              "execute_decision",
+              "start_workflow",
+              "get_recent_events"
+            ],
+            "title": "Tool Name"
+          },
+          "session_context": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Session Context",
+            "examples": [
+              {
+                "org_id": "org_acme_corp"
+              }
+            ]
+          },
+          "parameters": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Parameters",
+            "examples": [
+              {
+                "dimension": "Region B",
+                "metric": "margin",
+                "period": "Q3-2026"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "transaction_id",
+          "tool_name"
+        ],
+        "title": "OrchestrationRequest"
+      },
+      "OrchestrationResponse": {
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "title": "Transaction Id"
+          },
+          "status": {
+            "type": "string",
+            "const": "COMPLETED",
+            "title": "Status",
+            "default": "COMPLETED"
+          },
+          "payloads": {
+            "$ref": "#/components/schemas/DualPayload"
+          }
+        },
+        "type": "object",
+        "required": [
+          "transaction_id",
+          "payloads"
+        ],
+        "title": "OrchestrationResponse"
+      },
+      "ReasonApiResponse": {
+        "properties": {
+          "intent": {
+            "type": "string",
+            "title": "Intent"
+          },
+          "tool": {
+            "type": "string",
+            "title": "Tool"
+          },
+          "tool_arguments": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Tool Arguments"
+          },
+          "voice_summary": {
+            "type": "string",
+            "title": "Voice Summary"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "gemini",
+              "seeded"
+            ],
+            "title": "Source"
+          },
+          "payloads": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DualPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "intent",
+          "tool",
+          "voice_summary",
+          "source"
+        ],
+        "title": "ReasonApiResponse"
+      },
+      "ReasonRequest": {
+        "properties": {
+          "utterance": {
+            "type": "string",
+            "title": "Utterance",
+            "examples": [
+              "Why is margin down in Region B?"
+            ]
+          },
+          "org_id": {
+            "type": "string",
+            "title": "Org Id",
+            "default": "org_acme_corp"
+          },
+          "execute": {
+            "type": "boolean",
+            "title": "Execute",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "utterance"
+        ],
+        "title": "ReasonRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VisualComponent": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "description": "KPI_GRID, ALERTS_TIMELINE, METRIC_CARD, DRIVER_BREAKDOWN_LIST, DECISION_CARD_LIST, or WORKFLOW_STEP_LIST."
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "items": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Items"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "id",
+          "type"
+        ],
+        "title": "VisualComponent"
+      },
+      "VisualStateModel": {
+        "properties": {
+          "view_id": {
+            "type": "string",
+            "title": "View Id",
+            "examples": [
+              "EXECUTIVE_BRIEF"
+            ]
+          },
+          "header_title": {
+            "type": "string",
+            "title": "Header Title"
+          },
+          "badge_status": {
+            "type": "string",
+            "title": "Badge Status"
+          },
+          "components": {
+            "items": {
+              "$ref": "#/components/schemas/VisualComponent"
+            },
+            "type": "array",
+            "title": "Components"
+          },
+          "highlight_target_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Highlight Target Id"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "view_id",
+          "header_title",
+          "badge_status"
+        ],
+        "title": "VisualStateModel"
+      },
+      "VoiceSummary": {
+        "properties": {
+          "narration_text": {
+            "type": "string",
+            "title": "Narration Text",
+            "description": "Couch-friendly Alexa narration for this view."
+          },
+          "suggested_followups": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Suggested Followups"
+          }
+        },
+        "type": "object",
+        "required": [
+          "narration_text"
+        ],
+        "title": "VoiceSummary"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "health",
+      "description": "Liveness for the Core Business Engine."
+    },
+    {
+      "name": "orchestration",
+      "description": "Domain tools that emit a dual Alexa + Fire TV payload."
+    },
+    {
+      "name": "briefings",
+      "description": "Current executive workstation briefing."
+    },
+    {
+      "name": "events",
+      "description": "Ring / site operational event ingest."
+    },
+    {
+      "name": "reasoning",
+      "description": "Gemini or seeded utterance \u2192 tool mapping."
+    }
+  ]
+}

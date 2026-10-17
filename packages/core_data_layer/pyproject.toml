@@ -1,0 +1,23 @@
+[project]
+name = "core-data-layer"
+version = "0.1.0"
+description = "SQLModel models, PostgreSQL repositories, and seed scripts for ExecuTV"
+requires-python = ">=3.12"
+dependencies = [
+  "sqlalchemy>=2.0.36",
+  "sqlmodel>=0.0.22",
+  "psycopg2-binary>=2.9.10",
+  "asyncpg>=0.30.0",
+  "pydantic-settings>=2.6.0",
+  "python-dotenv>=1.0.1",
+]
+
+[project.scripts]
+executv-seed = "core_data_layer.seed:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+dev-mode-dirs = ["src"]

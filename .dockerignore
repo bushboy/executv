@@ -1,0 +1,17 @@
+.git
+.venv
+venv
+node_modules
+**/node_modules
+**/dist
+**/.vite
+**/__pycache__
+**/*.pyc
+tmp
+.cursor
+.env
+.env.local
+pgdata
+.postgres-data
+apps/visual_display_adapter/node_modules
+apps/visual_display_adapter/dist

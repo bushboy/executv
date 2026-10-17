@@ -1,0 +1,96 @@
+# ExecuTV on the shared VPS. Images are loaded from deployment/images/executv-images.tar.
+# There is no Postgres service. Containers use the host database via host.docker.internal.
+#
+# Host ports are bound to 127.0.0.1 so they do not collide with the other stacks:
+#   1433 sql2022, 5100-5104 reliable-*, 8280 creatortrust-keycloak,
+#   18107 fileflash, 32800 creatortrust-frontend, 32801 creatortrust-api.
+# Public HTTP is the host nginx site (nginx/executv.delegant.online.conf), not these ports.
+#
+#   127.0.0.1:5210  visual display (container :80)
+#   127.0.0.1:5211  core engine    (container :8001)
+#   127.0.0.1:5212  ingress gateway (container :8000)
+
+name: executv
+
+services:
+  seed:
+    image: executv-python:hackathon
+    pull_policy: never
+    container_name: executv_seed
+    env_file: .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: ["executv-seed"]
+    restart: "no"
+
+  core_engine:
+    image: executv-python:hackathon
+    pull_policy: never
+    container_name: executv_core_engine
+    env_file: .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      CORE_ENGINE_HOST: 0.0.0.0
+      CORE_ENGINE_PORT: 8001
+    command: ["uvicorn", "core_engine.main:app", "--host", "0.0.0.0", "--port", "8001"]
+    ports:
+      - "127.0.0.1:5211:8001"
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health', timeout=3)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+    restart: unless-stopped
+
+  ingress_gateway:
+    image: executv-python:hackathon
+    pull_policy: never
+    container_name: executv_ingress
+    env_file: .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      INGRESS_GATEWAY_HOST: 0.0.0.0
+      INGRESS_GATEWAY_PORT: 8000
+      CORE_ENGINE_URL: http://core_engine:8001
+    command: ["uvicorn", "ingress_gateway.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "127.0.0.1:5212:8000"
+    depends_on:
+      core_engine:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+    restart: unless-stopped
+
+  visual_display:
+    image: executv-visual:hackathon
+    pull_policy: never
+    container_name: executv_visual_display
+    ports:
+      - "127.0.0.1:5210:80"
+    depends_on:
+      ingress_gateway:
+        condition: service_healthy
+    restart: unless-stopped

@@ -1,0 +1,19 @@
+# ExecuTV Python workspace (Python 3.12+)
+# Prefer `uv sync --all-packages` at the repo root. This file is the pip fallback.
+
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+mcp>=2.2.0
+sqlalchemy>=2.0.36
+sqlmodel>=0.0.22
+psycopg2-binary>=2.9.10
+asyncpg>=0.30.0
+pydantic>=2.10.0
+pydantic-settings>=2.6.0
+python-dotenv>=1.0.1
+httpx>=0.28.0
+boto3>=1.35.0
+
+-e ./packages/core_data_layer
+-e ./apps/core_engine
+-e ./apps/ingress_gateway
